@@ -1,0 +1,70 @@
+type User {
+	id: String!
+	uniqueName: String!
+	displayName: String!
+	email: String!
+}
+
+"""
+認証成功時のペイロード
+"""
+type AuthPayload {
+	accessToken: String!
+	refreshToken: String!
+
+	"""
+	認証されたユーザー情報
+	"""
+	user: User!
+}
+
+type Query {
+	me: User
+	user(id: String!): User
+}
+
+type Mutation {
+	"""
+	新規ユーザーを作成
+	"""
+	createUser(input: CreateUserInput!): AuthPayload!
+
+	"""
+	ユーザー情報を更新
+	"""
+	updateUser(id: String!, input: UpdateUserInput!): Boolean!
+
+	"""
+	指定したメールアドレスにマジックリンクを送信
+	"""
+	sendMagicLink(email: String!): Boolean!
+
+	"""
+	マジックリンクトークンを検証して認証を行う
+	"""
+	verifyMagicLink(token: String!): AuthPayload!
+
+	"""
+	受け取ったリフレッシュトークンが有効であれば、新しいトークンを返す
+	"""
+  refreshToken(refreshToken: String!): AuthPayload!
+}
+
+"""
+ユーザー作成時の入力データ
+"""
+input CreateUserInput {
+	uniqueName: String!
+	displayName: String!
+	email: String!
+}
+
+"""
+ユーザー更新時の入力データ
+"""
+input UpdateUserInput {
+	id: String!
+	uniqueName: String
+	displayName: String
+	email: String
+}
