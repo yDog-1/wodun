@@ -1,0 +1,15 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+  mysql-up:
+    desc: "run mysql container"
+    cmds:
+      - docker compose up -d db
+  mysql-down:
+    desc: "stop mysql container"
+    cmds:
+      - docker compose down db

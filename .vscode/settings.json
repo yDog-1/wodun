@@ -6,6 +6,9 @@
     },
     {
       "file": "/.github/copilot-instructions-about-wodun.md"
-    },
+    }
   ],
+  "[sql]": {
+    "editor.defaultFormatter": "dorzey.vscode-sqlfluff"
+  }
 }
