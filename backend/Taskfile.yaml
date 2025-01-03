@@ -1,0 +1,66 @@
+version: "3"
+
+dotenv:
+  - ../db.env
+
+includes:
+  root:
+    taskfile: ../Taskfile.yaml
+    dir: ..
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  gqlgen:
+    desc: "run gqlgen cli"
+    cmds:
+      - go run github.com/99designs/gqlgen {{.CLI_ARGS}}
+    silent: true
+
+  fmtlint:
+    desc: "format and lint all files"
+    ignore_error: true
+    cmds:
+      - dprint fmt
+      - gofmt -s -w .
+      - golangci-lint run
+      - sqlfluff fix
+      - sqlfluff lint
+
+  # goose tasks
+  goose:
+    desc: "run goose cli"
+    vars:
+      GOOSE_DRIVER: mysql
+      GOOSE_DBSTRING: "{{.MYSQL_USER}}:{{.MYSQL_PASSWORD}}@tcp(localhost:3306)/{{.MYSQL_DATABASE}}?parseTime=true"
+      GOOSE_MIGRATION_DIR: ./sql/migrations
+    cmds:
+      - goose -dir "{{.GOOSE_MIGRATION_DIR}}" "{{.GOOSE_DRIVER}}" "{{.GOOSE_DBSTRING}}" {{.CLI_ARGS}}
+    silent: true
+
+  goose-create:
+    aliases:
+      - gc
+    desc: "create a new migration"
+    cmds:
+      - task goose -- create "{{.CLI_ARGS}}" sql
+    silent: true
+
+  goose-up:
+    aliases:
+      - gu
+    desc: "run all up migrations"
+    cmds:
+      - task goose -- up
+    silent: true
+
+  goose-down:
+    aliases:
+      - gd
+    desc: "run all down migrations"
+    cmds:
+      - task goose -- down
+    silent: true

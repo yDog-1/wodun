@@ -1,0 +1,8 @@
+services:
+  db:
+    env_file:
+      - ./db.env
+    image: mysql:8.0-debian
+    container_name: mysql-container
+    ports:
+      - 3306:3306
