@@ -2,7 +2,7 @@
 dialect = mysql
 
 [sqlfluff:indentation]
-tab_space_size = 4
+indent_unit = tab
 
 [sqlfluff:rules:capitalisation.keywords]
 capitalisation_policy = upper
