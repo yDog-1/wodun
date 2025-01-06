@@ -19,7 +19,7 @@
     - GraphQL
     - SQL
 - SQL
-  - MySQL方言で記述する
+  - MySQL v8.0
 
 ## 文章の生成
 
