@@ -64,3 +64,10 @@ tasks:
     cmds:
       - task goose -- down
     silent: true
+
+  # sqlc
+  sqlc:
+    desc: "generate sqlc code"
+    cmds:
+      - sqlc generate
+    silent: true
