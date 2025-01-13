@@ -1,8 +1,12 @@
 [sqlfluff]
 dialect = mysql
+templater = placeholder
 
 [sqlfluff:indentation]
 indent_unit = tab
 
 [sqlfluff:rules:capitalisation.keywords]
 capitalisation_policy = upper
+
+[sqlfluff:templater:placeholder]
+param_style = numeric_dollar
