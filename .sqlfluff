@@ -9,4 +9,4 @@ indent_unit = tab
 capitalisation_policy = upper
 
 [sqlfluff:templater:placeholder]
-param_style = numeric_dollar
+param_style = question_mark
