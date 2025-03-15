@@ -41,7 +41,7 @@ func Test_ユーザーを作成する(t *testing.T) {
 	assert.NotEqual(t, "", id)
 
 	user, err := s.GetUser(ctx, "ydog")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotEqual(t, "", user.ID)
 	assert.Equal(t, "ydog", user.UniqueName)
 	assert.Equal(t, "yDog", user.DisplayName)
@@ -82,7 +82,7 @@ func Test_ユーザーの情報を更新する(t *testing.T) {
 	require.Nil(t, err)
 
 	user, err := s.GetUser(ctx, "modified")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.NotNil(t, user.ID)
 	assert.Equal(t, "modified", user.UniqueName)
 	assert.Equal(t, "yDog", user.DisplayName)
