@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -144,7 +144,7 @@ func (ts *TokenService) generateRefreshToken(id string) (string, error) {
 }
 
 func (ts *TokenService) ParseAccessToken(token string) (*Token, error) {
-	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+	t, err := jwt.Parse(token, func(t *jwt.Token) (any, error) {
 		if t.Method.Alg() != jwt.SigningMethodHS256.Alg() {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
@@ -197,7 +197,7 @@ func (ts *TokenService) ParseAccessToken(token string) (*Token, error) {
 }
 
 func (ts *TokenService) ParseRefreshToken(token string) (*Token, error) {
-	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+	t, err := jwt.Parse(token, func(t *jwt.Token) (any, error) {
 		if t.Method.Alg() != jwt.SigningMethodHS256.Alg() {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
