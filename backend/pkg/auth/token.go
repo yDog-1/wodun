@@ -49,6 +49,12 @@ type TokenStore interface {
 
 // TokenServiceを生成する
 func NewTokenService(store TokenStore, clock clock) (*TokenService, error) {
+	if store == nil {
+		return nil, errors.New("store is nil")
+	}
+	if clock == nil {
+		return nil, errors.New("clock is nil")
+	}
 	iss, ok := os.LookupEnv("TOKEN_ISSUER")
 	if !ok {
 		return nil, errors.New("TOKEN_ISSUER is not set")
@@ -76,16 +82,16 @@ func NewTokenService(store TokenStore, clock clock) (*TokenService, error) {
 }
 
 // トークンを生成する
-func (ts *TokenService) GenerateToken(id, uniqueName string) (string, string, error) {
-	accessToken, err := ts.generateAccessToken(id, uniqueName)
+func (ts *TokenService) GenerateToken(id, uniqueName string) (accessToken string, refreshToken string, err error) {
+	at, err := ts.generateAccessToken(id, uniqueName)
 	if err != nil {
 		return "", "", err
 	}
-	refreshToken, err := ts.generateRefreshToken(id)
+	rt, err := ts.generateRefreshToken(id)
 	if err != nil {
 		return "", "", err
 	}
-	return accessToken, refreshToken, nil
+	return at, rt, nil
 }
 
 // アクセストークンを生成する
