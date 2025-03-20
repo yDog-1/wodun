@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -42,9 +43,9 @@ type TokenService struct {
 
 type TokenStore interface {
 	// jtiを保存する
-	SaveJTI(jti string) error
+	SaveJTI(ctx context.Context, jti string) error
 	// jtiが存在するか確認する
-	ExistsJTI(jti string) (bool, error)
+	ExistsJTI(ctx context.Context, jti string) (bool, error)
 }
 
 // TokenServiceを生成する
@@ -82,12 +83,12 @@ func NewTokenService(store TokenStore, clock clock) (*TokenService, error) {
 }
 
 // トークンを生成する
-func (ts *TokenService) GenerateToken(id, uniqueName string) (accessToken string, refreshToken string, err error) {
-	at, err := ts.generateAccessToken(id, uniqueName)
+func (ts *TokenService) GenerateToken(ctx context.Context, id, uniqueName string) (accessToken string, refreshToken string, err error) {
+	at, err := ts.generateAccessToken(ctx, id, uniqueName)
 	if err != nil {
 		return "", "", err
 	}
-	rt, err := ts.generateRefreshToken(id)
+	rt, err := ts.generateRefreshToken(ctx, id)
 	if err != nil {
 		return "", "", err
 	}
@@ -95,7 +96,7 @@ func (ts *TokenService) GenerateToken(id, uniqueName string) (accessToken string
 }
 
 // アクセストークンを生成する
-func (ts *TokenService) generateAccessToken(id, uniqueName string) (string, error) {
+func (ts *TokenService) generateAccessToken(ctx context.Context, id, uniqueName string) (string, error) {
 	jti := uuid.New().String()
 	claims := jwt.MapClaims{
 		"exp":   ts.clock.Now().Add(accessTokenExpire).Unix(),
@@ -113,7 +114,7 @@ func (ts *TokenService) generateAccessToken(id, uniqueName string) (string, erro
 	if err != nil {
 		return "", err
 	}
-	if err := ts.store.SaveJTI(jti); err != nil {
+	if err := ts.store.SaveJTI(ctx, jti); err != nil {
 		return "", err
 	}
 
@@ -121,7 +122,7 @@ func (ts *TokenService) generateAccessToken(id, uniqueName string) (string, erro
 }
 
 // リフレッシュトークンを生成する
-func (ts *TokenService) generateRefreshToken(id string) (string, error) {
+func (ts *TokenService) generateRefreshToken(ctx context.Context, id string) (string, error) {
 	jti := uuid.New().String()
 	claims := jwt.MapClaims{
 		"exp": ts.clock.Now().Add(refreshTokenExpire).Unix(),
@@ -136,7 +137,7 @@ func (ts *TokenService) generateRefreshToken(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := ts.store.SaveJTI(jti); err != nil {
+	if err := ts.store.SaveJTI(ctx, jti); err != nil {
 		return "", err
 	}
 

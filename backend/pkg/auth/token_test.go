@@ -1,6 +1,7 @@
 package auth_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -12,10 +13,10 @@ import (
 type mockTokenStore struct {
 }
 
-func (m mockTokenStore) SaveJTI(jti string) error {
+func (m mockTokenStore) SaveJTI(ctx context.Context, jti string) error {
 	return nil
 }
-func (m mockTokenStore) ExistsJTI(jti string) (bool, error) {
+func (m mockTokenStore) ExistsJTI(ctx context.Context, jti string) (bool, error) {
 	return false, nil
 }
 
@@ -27,6 +28,7 @@ func (c mockClock) Now() time.Time {
 }
 
 func Testトークンを生成する(t *testing.T) {
+	ctx := context.Background()
 	t.Setenv("TOKEN_ISSUER", "test")
 	t.Setenv("TOKEN_AUDIENCE", "test")
 	t.Setenv("TOKEN_ACCESS_SECRET", "test")
@@ -36,7 +38,7 @@ func Testトークンを生成する(t *testing.T) {
 	ts, err := auth.NewTokenService(store, mockClock{})
 	assert.Nil(t, err)
 	// トークンを生成する
-	accessToken, refreshToken, err := ts.GenerateToken(id, "user")
+	accessToken, refreshToken, err := ts.GenerateToken(ctx, id, "user")
 	assert.NoError(t, err)
 
 	accessClaims, err := ts.ParseAccessToken(accessToken)
