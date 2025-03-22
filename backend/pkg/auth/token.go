@@ -98,14 +98,14 @@ func (ts *TokenService) GenerateToken(ctx context.Context, id, uniqueName string
 // アクセストークンを生成する
 func (ts *TokenService) generateAccessToken(ctx context.Context, id, uniqueName string) (string, error) {
 	jti := uuid.New().String()
-	claims := jwt.MapClaims{
-		"exp":   ts.clock.Now().Add(accessTokenExpire).Unix(),
-		"iat":   ts.clock.Now().Unix(),
-		"iss":   ts.issuer,
-		"sub":   id,
-		"aud":   ts.audience,
-		"jti":   jti,
-		"uname": uniqueName,
+	claims := accessClaims{
+		Issuer:     ts.issuer,
+		Subject:    id,
+		Audience:   []string{ts.audience},
+		ExpiresAt:  jwt.NewNumericDate(ts.clock.Now().Add(accessTokenExpire)),
+		IssuedAt:   jwt.NewNumericDate(ts.clock.Now()),
+		ID:         jti,
+		UniqueName: uniqueName,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -124,11 +124,11 @@ func (ts *TokenService) generateAccessToken(ctx context.Context, id, uniqueName 
 // リフレッシュトークンを生成する
 func (ts *TokenService) generateRefreshToken(ctx context.Context, id string) (string, error) {
 	jti := uuid.New().String()
-	claims := jwt.MapClaims{
-		"exp": ts.clock.Now().Add(refreshTokenExpire).Unix(),
-		"iss": ts.issuer,
-		"sub": id,
-		"jti": jti,
+	claims := refreshClaims{
+		Issuer:    ts.issuer,
+		Subject:   id,
+		ExpiresAt: jwt.NewNumericDate(ts.clock.Now().Add(refreshTokenExpire)),
+		ID:        jti,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
