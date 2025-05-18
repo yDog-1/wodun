@@ -16,7 +16,7 @@ func (m *mockTokenStore) SaveJTI(ctx context.Context, jti string) error {
 	return nil
 }
 
-func (m *mockTokenStore) ExistsJTI(ctx context.Context, jti string) (bool, error) {
+func (m *mockTokenStore) ExistsJTI(ctx context.Context, id, jti string) (bool, error) {
 	return true, nil
 }
 

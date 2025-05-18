@@ -45,7 +45,7 @@ type TokenStore interface {
 	// jtiを保存する
 	SaveJTI(ctx context.Context, jti string) error
 	// jtiが存在するか確認する
-	ExistsJTI(ctx context.Context, jti string) (bool, error)
+	ExistsJTI(ctx context.Context, id, jti string) (bool, error)
 }
 
 // TokenServiceを生成する
