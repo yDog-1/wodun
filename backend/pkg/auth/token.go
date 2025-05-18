@@ -202,7 +202,7 @@ func (ts *TokenService) ParseRefreshToken(token string) (*Token, error) {
 		if t.Method.Alg() != jwt.SigningMethodHS256.Alg() {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
-		return []byte(ts.accessSecret), nil
+		return []byte(ts.refreshSecret), nil
 	})
 
 	if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
