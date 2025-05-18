@@ -157,12 +157,12 @@ func (ts *TokenService) ParseAccessToken(token string) (*Token, error) {
 		if err != nil {
 			return nil, err
 		}
-		expUTC := exp.Time.UTC()
+		expUTC := exp.UTC()
 		iat, err := claims.GetIssuedAt()
 		if err != nil {
 			return nil, err
 		}
-		iatUTC := iat.Time.UTC()
+		iatUTC := iat.UTC()
 		iss, err := claims.GetIssuer()
 		if err != nil {
 			return nil, err
@@ -210,7 +210,7 @@ func (ts *TokenService) ParseRefreshToken(token string) (*Token, error) {
 		if err != nil {
 			return nil, err
 		}
-		expUTC := exp.Time.UTC()
+		expUTC := exp.UTC()
 		iss, err := claims.GetIssuer()
 		if err != nil {
 			return nil, err
