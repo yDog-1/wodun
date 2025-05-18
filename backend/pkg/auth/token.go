@@ -1,12 +1,13 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"time"
 
-	jwt "github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -42,9 +43,9 @@ type TokenService struct {
 
 type TokenStore interface {
 	// jtiを保存する
-	SaveJTI(jti string) error
+	SaveJTI(ctx context.Context, jti string) error
 	// jtiが存在するか確認する
-	ExistsJTI(jti string) (bool, error)
+	ExistsJTI(ctx context.Context, id, jti string) (bool, error)
 }
 
 // TokenServiceを生成する
@@ -82,12 +83,12 @@ func NewTokenService(store TokenStore, clock clock) (*TokenService, error) {
 }
 
 // トークンを生成する
-func (ts *TokenService) GenerateToken(id, uniqueName string) (accessToken string, refreshToken string, err error) {
-	at, err := ts.generateAccessToken(id, uniqueName)
+func (ts *TokenService) GenerateToken(ctx context.Context, id, uniqueName string) (accessToken string, refreshToken string, err error) {
+	at, err := ts.generateAccessToken(ctx, id, uniqueName)
 	if err != nil {
 		return "", "", err
 	}
-	rt, err := ts.generateRefreshToken(id)
+	rt, err := ts.generateRefreshToken(ctx, id)
 	if err != nil {
 		return "", "", err
 	}
@@ -95,16 +96,16 @@ func (ts *TokenService) GenerateToken(id, uniqueName string) (accessToken string
 }
 
 // アクセストークンを生成する
-func (ts *TokenService) generateAccessToken(id, uniqueName string) (string, error) {
+func (ts *TokenService) generateAccessToken(ctx context.Context, id, uniqueName string) (string, error) {
 	jti := uuid.New().String()
-	claims := jwt.MapClaims{
-		"exp":   ts.clock.Now().Add(accessTokenExpire).Unix(),
-		"iat":   ts.clock.Now().Unix(),
-		"iss":   ts.issuer,
-		"sub":   id,
-		"aud":   ts.audience,
-		"jti":   jti,
-		"uname": uniqueName,
+	claims := accessClaims{
+		Issuer:     ts.issuer,
+		Subject:    id,
+		Audience:   []string{ts.audience},
+		ExpiresAt:  jwt.NewNumericDate(ts.clock.Now().Add(accessTokenExpire)),
+		IssuedAt:   jwt.NewNumericDate(ts.clock.Now()),
+		ID:         jti,
+		UniqueName: uniqueName,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -113,7 +114,7 @@ func (ts *TokenService) generateAccessToken(id, uniqueName string) (string, erro
 	if err != nil {
 		return "", err
 	}
-	if err := ts.store.SaveJTI(jti); err != nil {
+	if err := ts.store.SaveJTI(ctx, jti); err != nil {
 		return "", err
 	}
 
@@ -121,13 +122,13 @@ func (ts *TokenService) generateAccessToken(id, uniqueName string) (string, erro
 }
 
 // リフレッシュトークンを生成する
-func (ts *TokenService) generateRefreshToken(id string) (string, error) {
+func (ts *TokenService) generateRefreshToken(ctx context.Context, id string) (string, error) {
 	jti := uuid.New().String()
-	claims := jwt.MapClaims{
-		"exp": ts.clock.Now().Add(refreshTokenExpire).Unix(),
-		"iss": ts.issuer,
-		"sub": id,
-		"jti": jti,
+	claims := refreshClaims{
+		Issuer:    ts.issuer,
+		Subject:   id,
+		ExpiresAt: jwt.NewNumericDate(ts.clock.Now().Add(refreshTokenExpire)),
+		ID:        jti,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -136,7 +137,7 @@ func (ts *TokenService) generateRefreshToken(id string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := ts.store.SaveJTI(jti); err != nil {
+	if err := ts.store.SaveJTI(ctx, jti); err != nil {
 		return "", err
 	}
 
@@ -156,12 +157,12 @@ func (ts *TokenService) ParseAccessToken(token string) (*Token, error) {
 		if err != nil {
 			return nil, err
 		}
-		expUTC := exp.Time.UTC()
+		expUTC := exp.UTC()
 		iat, err := claims.GetIssuedAt()
 		if err != nil {
 			return nil, err
 		}
-		iatUTC := iat.Time.UTC()
+		iatUTC := iat.UTC()
 		iss, err := claims.GetIssuer()
 		if err != nil {
 			return nil, err
@@ -201,7 +202,7 @@ func (ts *TokenService) ParseRefreshToken(token string) (*Token, error) {
 		if t.Method.Alg() != jwt.SigningMethodHS256.Alg() {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
-		return []byte(ts.accessSecret), nil
+		return []byte(ts.refreshSecret), nil
 	})
 
 	if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
@@ -209,7 +210,7 @@ func (ts *TokenService) ParseRefreshToken(token string) (*Token, error) {
 		if err != nil {
 			return nil, err
 		}
-		expUTC := exp.Time.UTC()
+		expUTC := exp.UTC()
 		iss, err := claims.GetIssuer()
 		if err != nil {
 			return nil, err

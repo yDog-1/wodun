@@ -37,28 +37,24 @@ func MySQLcontainerInput(options ...MySQLcontainerOption) *mySQLcontainerInput {
 func WithImage(image string) MySQLcontainerOption {
 	return func(input *mySQLcontainerInput) {
 		input.image = image
-		return
 	}
 }
 
 func WithDBName(dbName string) MySQLcontainerOption {
 	return func(input *mySQLcontainerInput) {
 		input.dbName = dbName
-		return
 	}
 }
 
 func WithUser(user string) MySQLcontainerOption {
 	return func(input *mySQLcontainerInput) {
 		input.user = user
-		return
 	}
 }
 
 func WithPassword(password string) MySQLcontainerOption {
 	return func(input *mySQLcontainerInput) {
 		input.password = password
-		return
 	}
 }
 
